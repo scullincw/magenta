@@ -39,8 +39,12 @@ matplotlib.use('Agg')
 class RLTunerTest(tf.test.TestCase):
 
   def setUp(self):
-    self.output_dir = tempfile.mkdtemp(dir=self.get_temp_dir())
-    self.checkpoint_dir = tempfile.mkdtemp(dir=self.get_temp_dir())
+    #self.output_dir = tempfile.mkdtemp(dir=self.get_temp_dir())  #原始
+    self.output_dir = tempfile.mkdtemp(dir='/root/magenta/magenta/models/rl_tuner/output')
+    print('\n', str(self.output_dir), '\n')
+    #self.checkpoint_dir = tempfile.mkdtemp(dir=self.get_temp_dir())  #原始
+    self.checkpoint_dir = tempfile.mkdtemp(dir='/root/magenta/magenta/models/rl_tuner')
+    print('\n', str(self.checkpoint_dir), '\n')
     graph = tf.Graph()
     self.session = tf.Session(graph=graph)
     note_rnn = note_rnn_loader.NoteRNNLoader(

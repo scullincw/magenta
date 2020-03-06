@@ -121,6 +121,7 @@ class RLTuner(object):
         will be sampled from the model's softmax output.
       algorithm: can be 'default', 'psi', 'g' or 'pure_rl', for different
         learning algorithms
+
       note_rnn_checkpoint_dir: The directory from which the internal
         NoteRNNLoader will load its checkpointed LSTM.
       note_rnn_checkpoint_file: A checkpoint file to use in case one cannot be
@@ -128,6 +129,7 @@ class RLTuner(object):
       note_rnn_type: If 'default', will use the basic LSTM described in the
         research paper. If 'basic_rnn', will assume the checkpoint is from a
         Magenta basic_rnn model.
+
       note_rnn_hparams: A HParams object which defines the hyper parameters
         used to train the MelodyRNN model that will be loaded from a checkpoint.
       num_notes_in_melody: The length of a composition of the model
@@ -239,7 +241,7 @@ class RLTuner(object):
       self.initialize_internal_models_graph_session()
 
   def initialize_internal_models_graph_session(self,
-                                               restore_from_checkpoint=True):
+                                               restore_from_checkpoint=False):
     """Initializes internal RNN models, builds the graph, starts the session.
 
     Adds the graphs of the internal RNN models to this graph, adds the DQN ops
