@@ -241,7 +241,7 @@ class RLTuner(object):
       self.initialize_internal_models_graph_session()
 
   def initialize_internal_models_graph_session(self,
-                                               restore_from_checkpoint=False):
+                                               restore_from_checkpoint=True):
     """Initializes internal RNN models, builds the graph, starts the session.
 
     Adds the graphs of the internal RNN models to this graph, adds the DQN ops
