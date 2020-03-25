@@ -40,7 +40,7 @@ class RLTunerTest(tf.test.TestCase):
 
   def setUp(self):
     #self.output_dir = tempfile.mkdtemp(dir=self.get_temp_dir())  #原始
-    self.output_dir = "/tmp/rl_tuner/2020.3.7-02"
+    self.output_dir = "/tmp/rl_tuner/2020.3.7-03"
     #print('\n', str(self.output_dir), '\n')
     self.checkpoint_dir = tempfile.mkdtemp(dir=self.get_temp_dir())  #原始
     #self.checkpoint_dir = tempfile.mkdtemp(dir='/root/magenta/magenta/models/rl_tuner')
