@@ -1,3 +1,0 @@
-model_checkpoint_path: "/root/magenta/magenta/models/rl_tuner/output/tmpit2cwdpk/rl_tuner.ckpt-30"
-all_model_checkpoint_paths: "/root/magenta/magenta/models/rl_tuner/output/tmpit2cwdpk/q-0"
-all_model_checkpoint_paths: "/root/magenta/magenta/models/rl_tuner/output/tmpit2cwdpk/rl_tuner.ckpt-30"

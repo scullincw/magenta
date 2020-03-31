@@ -1,62 +1,35 @@
-# Copyright 2020 The Magenta Authors.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
-"""Tests for RLTuner and by proxy NoteRNNLoader.
-
-To run this code:
-$ python magenta/models/rl_tuner/rl_tuner_test.py
-"""
-
 import os
 import os.path
-import tempfile
 
 from magenta.models.rl_tuner import note_rnn_loader
 from magenta.models.rl_tuner import rl_tuner
-import matplotlib
-import matplotlib.pyplot as plt  # pylint: disable=unused-import
 import tensorflow.compat.v1 as tf
 
-# Need to use 'Agg' option for plotting and saving files from command line.
-# Can't use 'Agg' in RL Tuner because it breaks plotting in notebooks.
-# pylint: disable=g-import-not-at-top,wrong-import-position
-matplotlib.use('Agg')
+OUTPUT_DIR = 'output'
+CHECKPOINT_DIR = '../melody_rnn/checkpoint'
 
-# pylint: enable=g-import-not-at-top,wrong-import-position
+def setUp(self):
+    self.output_dir = OUTPUT_DIR + '/2020.3.26'
+    print(self.output_dir)
+    self.checkpoint_dir = CHECKPOINT_DIR
+    print(self.checkpoint_dir)
 
-
-class RLTunerTest(tf.test.TestCase):
-
-  def setUp(self):
-    self.output_dir = tempfile.mkdtemp(dir=self.get_temp_dir())
-    self.checkpoint_dir = tempfile.mkdtemp(dir=self.get_temp_dir())
     graph = tf.Graph()
     self.session = tf.Session(graph=graph)
     note_rnn = note_rnn_loader.NoteRNNLoader(
-        graph, scope='test', checkpoint_dir=None)
+        graph, scope='run', checkpoint_dir=None)
     note_rnn.initialize_new(self.session)
-    #tf.reset_default_graph()
     with graph.as_default():
-      saver = tf.train.Saver(var_list=note_rnn.get_variable_name_dict())
-      saver.save(
-          self.session,
-          os.path.join(self.checkpoint_dir, 'model.ckpt'))
+        saver = tf.train.Saver(var_list=note_rnn.get_variable_name_dict())
+        saver.save(
+            self.session,
+            os.path.join(self.checkpoint_dir, 'model.ckpt')
+        )
 
-  def tearDown(self):
+def tearDown(self):
     self.session.close()
 
-  def testInitializationAndPriming(self):
+def testInitializationAndPriming(self):
     rlt = rl_tuner.RLTuner(
         self.output_dir, note_rnn_checkpoint_dir=self.checkpoint_dir)
 
@@ -121,4 +94,3 @@ class RLTunerTest(tf.test.TestCase):
     self.assertTrue(len(stat_dict['autocorrelation1']) > 1)
 
 if __name__ == '__main__':
-  tf.test.main()
