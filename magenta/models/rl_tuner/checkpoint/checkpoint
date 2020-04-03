@@ -1,0 +1,2 @@
+model_checkpoint_path: "/root/magenta/magenta/models/rl_tuner/checkpoint/model.ckpt-15321"
+all_model_checkpoint_paths: "/root/magenta/magenta/models/rl_tuner/checkpoint/model.ckpt-15321"
