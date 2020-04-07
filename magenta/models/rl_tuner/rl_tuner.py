@@ -81,7 +81,7 @@ class RLTuner(object):
                note_rnn_checkpoint_dir=None,
                note_rnn_checkpoint_file=None,
                note_rnn_type='default',
-               note_rnn_hparams=None,
+               note_rnn_hparams="{'batch_size':64, 'rnn_layer_sizes':[64,64]}",
 
                # Other music related settings.
                num_notes_in_melody=32,

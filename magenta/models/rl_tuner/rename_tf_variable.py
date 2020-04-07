@@ -85,7 +85,8 @@ def rename(args):
             var = tf.Variable(var, name=new_name)
  
         # Save the variables
-        saver = load_model(args.ckpt_path)
+        #saver = load_model(args.ckpt_path)
+        saver = tf.train.Saver()
         sess.run(tf.global_variables_initializer())
         saver.save(sess, args.save_path)
  

@@ -43,6 +43,7 @@ from magenta.pipelines import melody_pipelines
 import numpy as np
 import tensorflow.compat.v1 as tf
 from tensorflow.contrib import layers as contrib_layers
+from tensorflow.contrib import training as contrib_training
 
 
 class NoteRNNLoader(object):
@@ -92,7 +93,16 @@ class NoteRNNLoader(object):
 
     if hparams is not None:
       tf.logging.info('Using custom hparams')
-      self.hparams = hparams
+      
+      """2020.4.5: bug fix
+      """
+
+      self.hparams = contrib_training.HParams(
+        batch_size=64,
+        rnn_layer_sizes=[64, 64],
+        one_hot_length=38
+      )
+
     else:
       tf.logging.info('Empty hparams string. Using defaults')
       self.hparams = rl_tuner_ops.default_hparams()
@@ -117,6 +127,21 @@ class NoteRNNLoader(object):
       A matrix of batch_size x cell size zeros.
     """
     return np.zeros((self.batch_size, self.cell.state_size))
+
+    """2020.4.5: bug fix
+        from: https://github.com/tensorflow/magenta/issues/1116#issuecomment-389184340
+    
+
+    state_tuple = ()
+    for layer_size in self.hparams.rnn_layer_sizes:
+      tup = np.zeros((self.hparams.batch_size, layer_size))
+      state = tf.contrib.rnn.LSTMStateTuple(tup, tup)
+      state_tuple += (state)
+
+
+    return state_tuple
+
+    """
 
   def restore_initialize_prime(self, session):
     """Saves the session, restores variables from checkpoint, primes model.
@@ -169,6 +194,17 @@ class NoteRNNLoader(object):
         var_dict[inner_name] = var
       else:
         var_dict[self.checkpoint_scope + '/' + inner_name] = var
+        """2020.4.5 bug fixed
+            from: https://github.com/tensorflow/magenta/issues/1156
+        """
+        print("debuggggingg!!!!!")
+        scope = self.checkpoint_scope + '/' + inner_name
+        print("scope: ", scope)
+        print("var: ", var)
+        if scope == 'rnn_model/rnn/multi_rnn_cell/cell_0/lstm_cell/bias':
+          var_dict['rnn_model/RNN/MultiRNNCell/Cell0/LSTMCell/B'] = var
+        elif scope == 'rnn_model/rnn/multi_rnn_cell/cell_0/lstm_cell/kernel':
+          var_dict['rnn_model/RNN/MultiRNNCell/Cell0/LSTMCell/W_0'] = var
 
     return var_dict
 
@@ -183,6 +219,7 @@ class NoteRNNLoader(object):
           # Make an LSTM cell with the number and size of layers specified in
           # hparams.
           if self.note_rnn_type == 'basic_rnn':
+            print(self.hparams.rnn_layer_sizes)
             self.cell = events_rnn_graph.make_rnn_cell(
                 self.hparams.rnn_layer_sizes)
           else:
@@ -194,6 +231,14 @@ class NoteRNNLoader(object):
                                                  self.hparams.one_hot_length],
                                                 name='melody_sequence')
           self.lengths = tf.placeholder(tf.int32, [None], name='lengths')
+
+          ''' 2020.4.7: source of bug
+                from: https://github.com/tensorflow/magenta/issues/1116#issuecomment-388141529
+                > The issue with TypeError from using basic_rnn is with the placeholder (line 199) in build_graph() from note_rnn_loader.py. The idea is that we want a placeholder for the MultiRNNCell which is represented as multiple tuple specifying the size. However, we cannot simply just pass [None, self.cell.state_size] because self.cell.state_size is a tuple containing the MultiCellRNN's RNN state sizes (represented as a tuple).
+
+                Instead we need to initialize the MultiCellRNN with zero_state. Then, during the training sessions, we need to modify how we Q-network, Target etc. is reading in states when we run the model (e.g. line 697 in rl_tuner.py) such that we are feeding in tuples of samples.
+          '''
+          
           self.initial_state = tf.placeholder(tf.float32,
                                               [None, self.cell.state_size],
                                               name='initial_state')
@@ -252,8 +297,13 @@ class NoteRNNLoader(object):
           # Does not recreate the model architecture but rather uses it to feed
           # data from the training queue through the model.
           with tf.variable_scope(self.scope, reuse=True):
+            """ 2020.4.5: bug fix
+                from: https://github.com/tensorflow/magenta/issues/1116
+                description: add a `placeholder` for self.hparams.batch_size
+            """
             zero_state = self.cell.zero_state(
-                batch_size=self.hparams.batch_size, dtype=tf.float32)
+                batch_size=tf.placeholder(tf.int32, [self.hparams.batch_size], name='batch_size'),
+                dtype=tf.float32)
 
             (self.train_logits, self.train_state) = run_network_on_melody(
                 self.train_sequence, self.train_lengths, zero_state)
