@@ -29,7 +29,7 @@ node {
             size: 1
           }
         }
-        string_val: "/download/melody_rnn/sequence_examples/training_melodies.tfrecord"
+        string_val: "/download/melody_rnn/sequence_examples/eval_melodies.tfrecord"
       }
     }
   }
